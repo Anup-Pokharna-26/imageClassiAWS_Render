@@ -1,0 +1,273 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>Food Classifier</title>
+</head>
+<body>
+  <h2>Upload Food Image</h2>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="image" accept="image/*" required />
+    <button type="submit">Classify</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const res = await fetch("/classify", { method: "POST", body: formData });
+      const data = await res.json();
+      document.getElementById("result").innerText = "Detected: " + data.labels.join(", ");
+    });
+  </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Food Classifier</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>🍽️ FoodAI</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#classify">Classify</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="home">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h2>Identify any food with AI precision</h2>
+                        <p>Our advanced food classification system uses Flask backend and AWS Amazon Rekognition to accurately identify food items from your images in seconds.</p>
+                        <a href="#classify" class="cta-button">Start Classifying</a>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="visual-card">
+                            <div class="food-icons">
+                                <span>🍎</span>
+                                <span>🍕</span>
+                                <span>🥗</span>
+                                <span>🍔</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="technology" id="about">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Powered by Advanced Technology</h3>
+                    <p>Our food classification system combines cutting-edge technologies for accurate results</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <div class="tech-icon">⚡</div>
+                        <h4>Flask Backend</h4>
+                        <p>Lightweight Python web framework handling image processing and API endpoints with high performance.</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">🤖</div>
+                        <h4>AWS Rekognition</h4>
+                        <p>Amazon's machine learning service for image analysis, providing accurate food identification and classification.</p>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">🎯</div>
+                        <h4>Real-time Analysis</h4>
+                        <p>Instant food recognition with confidence scores and detailed nutritional information.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="classifier" id="classify">
+            <div class="container">
+                <div class="classifier-content">
+                    <div class="classifier-info">
+                        <h3>Upload & Classify Your Food</h3>
+                        <p>Simply upload an image of any food item and our AI will identify it for you. Supports JPG, PNG, and other common image formats.</p>
+                        <div class="features">
+                            <div class="feature">
+                                <span class="feature-icon">✓</span>
+                                <span>Instant Recognition</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">✓</span>
+                                <span>High Accuracy</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">✓</span>
+                                <span>Multiple Food Items</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="upload-section">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-content">
+                                    <div class="upload-icon">📸</div>
+                                    <h4>Drop your food image here</h4>
+                                    <p>or click to browse files</p>
+                                    <input type="file" name="image" id="imageInput" accept="image/*" required />
+                                </div>
+                            </div>
+                            <div class="model-select">
+                                <label for="model">Select Model:</label>
+                                <select name="model" id="model">
+                                    <option value="default">Default Rekognition</option>
+                                    <option value="custom">Custom Indian Food Model</option>
+                                </select>
+                            </div>
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <img id="previewImg" src="/placeholder.svg" alt="Preview" />
+                                <button type="button" class="remove-image" id="removeImage">×</button>
+                            </div>
+                            <button type="submit" class="classify-button" id="classifyButton">
+                                <span class="button-text">Classify Food</span>
+                                <span class="loading-spinner" style="display: none;">🔄</span>
+                            </button>
+                        </form>
+                        <div id="result" class="result"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 FoodAI Classifier. Powered by Flask & AWS Rekognition.</p>
+        </div>
+    </footer>
+
+    <script>
+        const form = document.getElementById("uploadForm");
+        const uploadArea = document.getElementById("uploadArea");
+        const imageInput = document.getElementById("imageInput");
+        const imagePreview = document.getElementById("imagePreview");
+        const previewImg = document.getElementById("previewImg");
+        const removeImage = document.getElementById("removeImage");
+        const classifyButton = document.getElementById("classifyButton");
+        const result = document.getElementById("result");
+
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                imageInput.files = files;
+                handleImageSelect();
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener('change', handleImageSelect);
+
+        function handleImageSelect() {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    uploadArea.style.display = 'none';
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        removeImage.addEventListener('click', () => {
+            imageInput.value = '';
+            uploadArea.style.display = 'flex';
+            imagePreview.style.display = 'none';
+            result.innerHTML = '';
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const buttonText = classifyButton.querySelector('.button-text');
+            const loadingSpinner = classifyButton.querySelector('.loading-spinner');
+            
+            buttonText.style.display = 'none';
+            loadingSpinner.style.display = 'inline';
+            classifyButton.disabled = true;
+            
+            try {
+                const formData = new FormData(form);
+                const res = await fetch("/classify", { 
+                    method: "POST", 
+                    body: formData 
+                });
+                const data = await res.json();
+                
+                if (data.labels && data.labels.length > 0) {
+                    result.innerHTML = `
+                        <div class="result-success">
+                            <h4>🎉 Food Identified!</h4>
+                            <p><strong>Detected:</strong> ${data.labels.join(", ")}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="result-error">
+                            <h4>❌ No Food Detected</h4>
+                            <p>Please try uploading a clearer image of food.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="result-error">
+                        <h4>❌ Classification Failed</h4>
+                        <p>Please check your connection and try again.</p>
+                    </div>
+                `;
+            }
+            
+            buttonText.style.display = 'inline';
+            loadingSpinner.style.display = 'none';
+            classifyButton.disabled = false;
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
