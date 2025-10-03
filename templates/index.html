@@ -126,13 +126,6 @@
                                     <input type="file" name="image" id="imageInput" accept="image/*" required />
                                 </div>
                             </div>
-                            <div class="model-select">
-                                <label for="model">Select Model:</label>
-                                <select name="model" id="model">
-                                    <option value="default">Default Rekognition</option>
-                                    <option value="custom">Custom Indian Food Model</option>
-                                </select>
-                            </div>
                             <div class="image-preview" id="imagePreview" style="display: none;">
                                 <img id="previewImg" src="/placeholder.svg" alt="Preview" />
                                 <button type="button" class="remove-image" id="removeImage">×</button>
@@ -230,12 +223,23 @@
                 const data = await res.json();
                 
                 if (data.labels && data.labels.length > 0) {
-                    result.innerHTML = `
-                        <div class="result-success">
-                            <h4>🎉 Food Identified!</h4>
-                            <p><strong>Detected:</strong> ${data.labels.join(", ")}</p>
-                        </div>
-                    `;
+                    // Gemini returns structured objects ({food, confidence}) while Rekognition returns a simple list
+                    if (typeof data.labels[0] === 'object') {
+                        const items = data.labels.map(it => `${it.food} (${it.confidence}%)`);
+                        result.innerHTML = `
+                            <div class="result-success">
+                                <h4>🎉 Food Identified!</h4>
+                                <p><strong>Detected:</strong> ${items.join(", ")}</p>
+                            </div>
+                        `;
+                    } else {
+                        result.innerHTML = `
+                            <div class="result-success">
+                                <h4>🎉 Food Identified!</h4>
+                                <p><strong>Detected:</strong> ${data.labels.join(", ")}</p>
+                            </div>
+                        `;
+                    }
                 } else {
                     result.innerHTML = `
                         <div class="result-error">
