@@ -1,5 +1,6 @@
 flask
 gunicorn
+boto3
 requests
 google-generativeai
 Pillow
